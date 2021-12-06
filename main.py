@@ -13,8 +13,10 @@ def run():
     # task_6()
     # task_7()
     # task_8()
-    task_9()
-    task_10()
+    # task_9()
+    # task_10()
+    task_11()
+    task_12()
     return
 
 
@@ -322,6 +324,58 @@ def task_10():
     #     for c in row:
     #         print("{0}".format(c if c > 0 else "."), end ="")
     #     print("")
+    return
+
+
+def task_11():
+    s = open("data/data_task_11", "r")
+    rows = s.readline()
+    s.close()
+    ##
+    fishes = list(map(int, rows.split(",")))
+    simulation_length = 80
+
+    grid = np.zeros(9)
+    for fish in fishes:
+        grid[fish] += 1
+
+    for j in range(simulation_length):
+        x = grid[0]
+
+        for i in np.arange(1, 9):
+            grid[i - 1] = grid[i]
+        grid[8] = 0
+
+        grid[6] += x
+        grid[8] += x
+
+    print("LANTERNFISH = {0} @ {1}".format(simulation_length, grid.sum()))
+    return
+
+
+def task_12():
+    s = open("data/data_task_11", "r")
+    rows = s.readline()
+    s.close()
+    ##
+    fishes = list(map(int, rows.split(",")))
+    simulation_length = 256
+
+    grid = np.zeros(9)
+    for fish in fishes:
+        grid[fish] += 1
+
+    for j in range(simulation_length):
+        x = grid[0]
+
+        for i in np.arange(1, 9):
+            grid[i - 1] = grid[i]
+        grid[8] = 0
+
+        grid[6] += x
+        grid[8] += x
+
+    print("LANTERNFISH = {0} @ {1}".format(simulation_length, grid.sum()))
     return
 
 
