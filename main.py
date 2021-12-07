@@ -15,8 +15,10 @@ def run():
     # task_8()
     # task_9()
     # task_10()
-    task_11()
-    task_12()
+    # task_11()
+    # task_12()
+    task_13()
+    task_14()
     return
 
 
@@ -376,6 +378,40 @@ def task_12():
         grid[8] += x
 
     print("LANTERNFISH = {0} @ {1}".format(simulation_length, grid.sum()))
+    return
+
+
+def task_13():
+    s = open("data/data_task_13", "r")
+    data = s.readline()
+    s.close()
+    ##
+    xs = np.array(list(map(int, data.rstrip().split(","))))
+    max_xs = xs.max()
+    costs = np.zeros(max_xs)
+    for i in np.arange(max_xs):
+        for x in xs:
+            dist = np.abs(x - i)
+            costs[i] += dist
+
+    print("MIN_COST = {0}".format(costs.min()))
+    return
+
+
+def task_14():
+    s = open("data/data_task_13", "r")
+    data = s.readline()
+    s.close()
+    ##
+    xs = np.array(list(map(int, data.rstrip().split(","))))
+    max_xs = xs.max()
+    costs = np.zeros(max_xs)
+    for i in np.arange(max_xs):
+        for x in xs:
+            dist = np.abs(x - i)
+            costs[i] += np.arange(1, dist + 1).sum()
+
+    print("MIN_COST = {0}".format(costs.min()))
     return
 
 
