@@ -17,8 +17,10 @@ def run():
     # task_10()
     # task_11()
     # task_12()
-    task_13()
-    task_14()
+    # task_13()
+    # task_14()
+    task_15()
+    task_16()
     return
 
 
@@ -412,6 +414,129 @@ def task_14():
             costs[i] += np.arange(1, dist + 1).sum()
 
     print("MIN_COST = {0}".format(costs.min()))
+    return
+
+
+def task_15():
+    s = open("data/data_task_15", "r")
+    rows = s.readlines()
+    s.close()
+
+    unique_digits = [["c", "f"], ["b", "c", "d", "f"], ["a", "c", "f"], ["a", "b", "c", "d", "e", "f", "g"]]
+    all_digits = [
+        ["a", "b", "c", "e", "f", "g"],
+        ["c", "f"],
+        ["a", "c", "d", "e", "g"],
+        ["a", "c", "d", "f", "g"],
+        ["b", "c", "d", "f"],
+
+        ["a", "b", "d", "f", "g"],
+        ["a", "b", "d", "e", "f", "g"],
+        ["a", "c", "f"],
+        ["a", "b", "c", "d", "e", "f", "g"],
+        ["a", "b", "c", "d", "f", "g"]]
+
+    ##
+    def transform(row):
+        left, right = row.rstrip().split(" | ")
+        left, right = left.split(" "), right.split(" ")
+        return left, right
+
+    lines = [transform(row) for row in rows]
+    count_1478 = 0
+
+    for _, right in lines:
+        for digit in right:
+            for unique_digit in unique_digits:
+                if len(digit) == len(unique_digit):
+                    print("{} : {}".format(digit, unique_digit))
+                    count_1478 += 1
+
+    print("count_1478 = {0}".format(count_1478))
+    return
+
+
+def task_16():
+    s = open("data/data_task_15", "r")
+    rows = s.readlines()
+    s.close()
+
+    all_digits = [
+        "cagedb",
+        "ab",
+        "gcdfa",
+        "fbcad",
+        "eafb",
+        "cdfbe",
+        "cdfgeb",
+        "dab",
+        "acedgfb",
+        "cefabd"]
+
+    ##
+    def transform(row):
+        left, right = row.rstrip().split(" | ")
+        left, right = left.split(" "), right.split(" ")
+        return left, right
+
+    lines = [transform(row) for row in rows]
+    count_1478 = 0
+
+    idx_to_digit = [8, 5, 2, 3, 7, 9, 6, 4, 0, 1]
+
+    def build_dict(left):
+        k2d, d2k = {}, {}
+        for digit in left:
+            if len(digit) == 2:
+                k2d[digit] = 1
+                d2k[1] = digit
+            if len(digit) == 3:
+                k2d[digit] = 7
+                d2k[7] = digit
+            if len(digit) == 4:
+                k2d[digit] = 4
+                d2k[4] = digit
+            if len(digit) == 7:
+                k2d[digit] = 8
+                d2k[8] = digit
+        for digit in left:
+            if len(digit) == 5 and set(d2k[7]).issubset(set(digit)) and digit not in k2d:
+                k2d[digit] = 3
+                d2k[3] = digit
+        for digit in left:
+            if len(digit) == 6 and set(d2k[7]).issubset(set(digit)) and set(d2k[3]).issubset(set(digit)) and digit not in k2d:
+                k2d[digit] = 9
+                d2k[9] = digit
+        for digit in left:
+            if len(digit) == 6 and set(d2k[7]).issubset(set(digit)) and digit not in k2d:
+                k2d[digit] = 0
+                d2k[0] = digit
+        for digit in left:
+            if len(digit) == 6 and digit not in k2d:
+                k2d[digit] = 6
+                d2k[6] = digit
+        for digit in left:
+            if len(digit) == 5 and len(set(d2k[6]).intersection(set(digit))) == 5 and digit not in k2d:
+                k2d[digit] = 5
+                d2k[5] = digit
+        for digit in left:
+            if len(digit) == 5 and digit not in k2d:
+                k2d[digit] = 2
+                d2k[2] = digit
+        return k2d, d2k
+
+    sum = 0
+
+    for left, right in lines:
+        k2d, d2k = build_dict(left)
+        number = ""
+        for digit in right:
+            for key in k2d.keys():
+                if set(digit) == set(key):
+                    number += str(k2d[key])
+        number = int(number)
+        sum += number
+    print("sum = {0}".format(sum))
     return
 
 
