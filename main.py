@@ -19,8 +19,10 @@ def run():
     # task_12()
     # task_13()
     # task_14()
-    task_15()
-    task_16()
+    # task_15()
+    # task_16()
+    task_17()
+    task_18()
     return
 
 
@@ -537,6 +539,90 @@ def task_16():
         number = int(number)
         sum += number
     print("sum = {0}".format(sum))
+    return
+
+
+def task_17():
+    s = open("data/data_task_17", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        cave = list(map(int, list(row.rstrip())))
+        return cave
+
+    caves = np.array([transform(row) for row in rows])
+    h, w = caves.shape
+    highest = caves.max()
+    padding = np.ones((h + 2, w + 2)) * (highest + 1)
+    padding[1:h + 1, 1:w + 1] = caves
+
+    def found(v, x_i, y_i):
+        if padding[x_i - 1, y_i] > v and padding[x_i + 1, y_i] > v and padding[x_i, y_i - 1] > v and padding[x_i, y_i + 1] > v:
+            return True
+        return False
+
+    #
+    levels = 0
+    for x_i in np.arange(1, h + 1):
+        for y_i in np.arange(1, w + 1):
+            v = padding[x_i, y_i]
+            match = found(v, x_i, y_i)
+            if match:
+                levels += v + 1
+
+    print("LEVELS = {0}".format(levels))
+    return
+
+
+def task_18():
+    s = open("data/data_task_17", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        cave = list(map(int, list(row.rstrip())))
+        return cave
+
+    caves = np.array([transform(row) for row in rows])
+    h, w = caves.shape
+    highest = caves.max()
+    padding = np.ones((h + 2, w + 2)) * 9
+    padding[1:h + 1, 1:w + 1] = caves
+    states = np.zeros((h + 2, w + 2))
+
+    def found(v, x_i, y_i):
+        if states[x_i, y_i] == 1 or v == 9:
+            states[x_i, y_i] = 1
+            return 0
+
+        states[x_i, y_i] = 1
+
+        basin_size = 1
+
+        if padding[x_i - 1, y_i] < 9:
+            basin_size += found(padding[x_i - 1, y_i], x_i - 1, y_i)
+        if padding[x_i + 1, y_i] < 9:
+            basin_size += found(padding[x_i + 1, y_i], x_i + 1, y_i)
+        if padding[x_i, y_i - 1] < 9:
+            basin_size += found(padding[x_i, y_i - 1], x_i, y_i - 1)
+        if padding[x_i, y_i + 1] < 9:
+            basin_size += found(padding[x_i, y_i + 1], x_i, y_i + 1)
+        return basin_size
+
+    #
+    basins = []
+    for x_i in np.arange(1, h + 1):
+        for y_i in np.arange(1, w + 1):
+            v = padding[x_i, y_i]
+            basin_size = found(v, x_i, y_i)
+            if basin_size > 0:
+                basins.append(basin_size)
+
+    top_3 = sorted(basins)[-3:]
+    print("TOP 3 = {0} : {1}".format(top_3, np.prod(top_3)))
     return
 
 
