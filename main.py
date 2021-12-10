@@ -21,8 +21,10 @@ def run():
     # task_14()
     # task_15()
     # task_16()
-    task_17()
-    task_18()
+    # task_17()
+    # task_18()
+    task_19()
+    task_20()
     return
 
 
@@ -623,6 +625,108 @@ def task_18():
 
     top_3 = sorted(basins)[-3:]
     print("TOP 3 = {0} : {1}".format(top_3, np.prod(top_3)))
+    return
+
+
+def task_19():
+    s = open("data/data_task_19", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        return row.rstrip()
+
+    rows = [transform(row) for row in rows]
+    #
+    begins, closes, stats = ["(", "[", "{", "<"], [")", "]", "}", ">"], [3, 57, 1197, 25137]
+    b2i, c2i = {}, {}
+    for idx, begin in enumerate(begins):
+        b2i[begin] = stats[idx]
+    for idx, close in enumerate(closes):
+        c2i[close] = stats[idx]
+    #
+    syntax_errors = []
+    for y, row in enumerate(rows):
+        queue = []
+        for x, char in enumerate(row):
+            e = None
+            if char in b2i:
+                e = (x, char, 'o', b2i[char])
+            if char in c2i:
+                e = (x, char, 'c', c2i[char])
+            if len(queue) > 0:
+                q, previous, mode1, i = queue[-1]
+                q, current, mode2, j = e
+                if i != j and mode1 != mode2:
+                    syntax_errors.append((y, current, j))
+                    break
+                if i == j and mode1 != mode2:
+                    queue.pop(-1)
+                    continue
+            queue.append(e)
+    #
+    syntax_error_score = [se[2] for se in syntax_errors]
+    syntax_error_score = sum(syntax_error_score)
+    print("SYNTAX_ERROR_SCORE = {0}".format(syntax_error_score))
+    return
+
+
+def task_20():
+    s = open("data/data_task_19", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        return row.rstrip()
+
+    rows = [transform(row) for row in rows]
+    #
+    begins, closes, stats = ["(", "[", "{", "<"], [")", "]", "}", ">"], [1, 2, 3, 4]
+    b2i, c2i = {}, {}
+    for idx, begin in enumerate(begins):
+        b2i[begin] = stats[idx]
+    for idx, close in enumerate(closes):
+        c2i[close] = stats[idx]
+    #
+    incomplete = []
+    for y, row in enumerate(rows):
+        syntax_errors = []
+        queue = []
+        for x, char in enumerate(row):
+            e = None
+            if char in b2i:
+                e = (x, char, 'o', b2i[char])
+            if char in c2i:
+                e = (x, char, 'c', c2i[char])
+            if len(queue) > 0:
+                q, previous, mode1, i = queue[-1]
+                q, current, mode2, j = e
+                if i != j and mode1 != mode2:
+                    syntax_errors.append((y, current, j))
+                    break
+                if i == j and mode1 != mode2:
+                    queue.pop(-1)
+                    continue
+            queue.append(e)
+        if len(queue) > 0 and len(syntax_errors) == 0:
+            incomplete.append((y, queue))
+
+    scores = []
+    for y, queue in incomplete:
+        completetion_string = []
+        for (x, char, mode, i) in queue:
+            completetion_string.append(char)
+        completetion_string.reverse()
+        score = 0
+        for idx, char in enumerate(completetion_string):
+            score = (score * 5) + b2i[char]
+        print("score = {0}".format(score))
+        scores.append(score)
+    middle_score = sorted(scores)[int(len(scores) / 2)]
+    print("MIDDLE_SCORE = {0}".format(middle_score))
+    #
     return
 
 
