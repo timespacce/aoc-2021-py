@@ -23,8 +23,10 @@ def run():
     # task_16()
     # task_17()
     # task_18()
-    task_19()
-    task_20()
+    # task_19()
+    # task_20()
+    task_21()
+    task_22()
     return
 
 
@@ -727,6 +729,114 @@ def task_20():
     middle_score = sorted(scores)[int(len(scores) / 2)]
     print("MIDDLE_SCORE = {0}".format(middle_score))
     #
+    return
+
+
+def task_21():
+    s = open("data/data_task_21", "r")
+    rows = s.readlines()
+    s.close()
+
+    def transform(row):
+        row = np.array(list(map(int, list(row.rstrip()))))
+        return row
+
+    energy = np.array([transform(row) for row in rows])
+    w, h = energy.shape
+    steps, flashes = 100, 0
+
+    dirs = [
+        (- 1, - 1),
+        (+ 0, - 1),
+        (+ 1, - 1),
+        (+ 1, + 0),
+        (+ 1, + 1),
+        (+ 0, + 1),
+        (- 1, + 1),
+        (- 1, + 0),
+    ]
+
+    def process(stats, x, y):
+        if energy[x + 0, y + 0] > 9:
+            energy[x + 0, y + 0] = 0
+            stats[x, y] = 0
+
+            local_flashes = 1
+            for x_o, y_o in dirs:
+                x_c, y_c = x + x_o, y + y_o
+                if x_c < 0 or y_c < 0 or x_c >= energy.shape[0] or y_c >= energy.shape[1]:
+                    continue
+                energy[x_c, y_c] = energy[x_c, y_c] + 1 * stats[x_c, y_c]
+                if energy[x_c, y_c] > 9:
+                    local_flashes += process(stats, x_c, y_c)
+            return local_flashes
+
+        return 0
+
+    for i in np.arange(steps):
+        stats = np.ones(energy.shape)
+        energy = energy + 1
+        for x in np.arange(w):
+            for y in np.arange(h):
+                flashes += process(stats, x, y)
+
+    print("FLASHES = {0}".format(flashes))
+    return
+
+
+def task_22():
+    s = open("data/data_task_21", "r")
+    rows = s.readlines()
+    s.close()
+
+    def transform(row):
+        row = np.array(list(map(int, list(row.rstrip()))))
+        return row
+
+    energy = np.array([transform(row) for row in rows])
+    w, h = energy.shape
+    steps, flashes = 1000, 0
+
+    dirs = [
+        (- 1, - 1),
+        (+ 0, - 1),
+        (+ 1, - 1),
+        (+ 1, + 0),
+        (+ 1, + 1),
+        (+ 0, + 1),
+        (- 1, + 1),
+        (- 1, + 0),
+    ]
+
+    def process(stats, x, y):
+        if energy[x + 0, y + 0] > 9:
+            energy[x + 0, y + 0] = 0
+            stats[x, y] = 0
+
+            local_flashes = 1
+            for x_o, y_o in dirs:
+                x_c, y_c = x + x_o, y + y_o
+                if x_c < 0 or y_c < 0 or x_c >= energy.shape[0] or y_c >= energy.shape[1]:
+                    continue
+                energy[x_c, y_c] = energy[x_c, y_c] + 1 * stats[x_c, y_c]
+                if energy[x_c, y_c] > 9:
+                    local_flashes += process(stats, x_c, y_c)
+            return local_flashes
+
+        return 0
+
+    step = 0
+    for i in np.arange(steps):
+        stats = np.ones(energy.shape)
+        energy = energy + 1
+        for x in np.arange(w):
+            for y in np.arange(h):
+                process(stats, x, y)
+        if energy.sum() == 0:
+            step = i
+            break
+
+    print("STEP = {0}".format(step + 1))
     return
 
 
