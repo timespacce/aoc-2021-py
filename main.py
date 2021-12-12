@@ -25,8 +25,10 @@ def run():
     # task_18()
     # task_19()
     # task_20()
-    task_21()
-    task_22()
+    # task_21()
+    # task_22()
+    task_23()
+    task_24()
     return
 
 
@@ -837,6 +839,118 @@ def task_22():
             break
 
     print("STEP = {0}".format(step + 1))
+    return
+
+
+def task_23():
+    s = open("data/data_task_23", "r")
+    rows = s.readlines()
+    s.close()
+
+    start, cave_to_stats, transitions, end = set(), {}, set(), set()
+
+    for row in rows:
+        x, y = row.rstrip().split("-")
+        x_big_cave, y_big_cave = x.isupper(), y.isupper()
+        cave_to_stats[x] = x_big_cave
+        cave_to_stats[y] = y_big_cave
+        transitions.add((x, y))
+
+    paths = []
+
+    def build_path(path):
+        v = path[-1]
+        if v == "end":
+            print("{0}".format(path))
+            paths.append(path)
+            return
+
+        counts = dict(Counter(path))
+        for key, value in counts.items():
+            if key == "start" or key == "end":
+                continue
+            if not cave_to_stats[key] and value > 1:
+                return
+
+        for (i, j) in transitions:
+            extension = path.copy()
+            if (v != i and v != j) or i == "start" or j == "start":
+                continue
+            ##
+            if v == i:
+                extension.append(j)
+            if v == j:
+                extension.append(i)
+            build_path(extension)
+
+    for x, y in transitions:
+        if x == "start":
+            path = [x, y]
+            build_path(path)
+        if y == "start":
+            path = [y, x]
+            build_path(path)
+
+    print("PATHS = {0}".format(len(paths)))
+
+    return
+
+
+def task_24():
+    s = open("data/data_task_23", "r")
+    rows = s.readlines()
+    s.close()
+
+    start, cave_to_stats, transitions, end = set(), {}, set(), set()
+
+    for row in rows:
+        x, y = row.rstrip().split("-")
+        x_big_cave, y_big_cave = x.isupper(), y.isupper()
+        cave_to_stats[x] = x_big_cave
+        cave_to_stats[y] = y_big_cave
+        transitions.add((x, y))
+
+    paths = []
+
+    def build_path(path):
+        v = path[-1]
+        if v == "end":
+            print("{0}".format(path))
+            paths.append(path)
+            return
+
+        counts = dict(Counter(path))
+        twice_visited = 0
+        for key, value in counts.items():
+            if key == "start" or key == "end":
+                continue
+            if not cave_to_stats[key] and value >= 2:
+                twice_visited += value
+
+        if twice_visited > 2:
+            return
+
+        for (i, j) in transitions:
+            extension = path.copy()
+            if (v != i and v != j) or i == "start" or j == "start":
+                continue
+            ##
+            if v == i:
+                extension.append(j)
+            if v == j:
+                extension.append(i)
+            build_path(extension)
+
+    for x, y in transitions:
+        if x == "start":
+            path = [x, y]
+            build_path(path)
+        if y == "start":
+            path = [y, x]
+            build_path(path)
+
+    print("PATHS = {0}".format(len(paths)))
+
     return
 
 
