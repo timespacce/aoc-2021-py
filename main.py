@@ -2,6 +2,7 @@ import time
 from collections import Counter
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def run():
@@ -27,8 +28,10 @@ def run():
     # task_20()
     # task_21()
     # task_22()
-    task_23()
-    task_24()
+    # task_23()
+    # task_24()
+    task_25()
+    task_26()
     return
 
 
@@ -951,6 +954,74 @@ def task_24():
 
     print("PATHS = {0}".format(len(paths)))
 
+    return
+
+
+def task_25():
+    s = open("data/data_task_25", "r")
+    rows = s.readlines()
+    s.close()
+    ##
+    idx = rows.index("\n")
+    positions = rows[0:idx]
+    folds = rows[idx + 1:]
+
+    positions = np.array([np.array(list(map(int, position.rstrip().split(",")))) for position in positions])
+    w, h = positions[:, 0].max() + 1, positions[:, 1].max() + 1
+    grid = np.zeros((h, w))
+    for x, y in positions:
+        grid[y, x] = 1
+
+    mat = grid.copy()
+
+    for fold in folds[:1]:
+        dim, v = fold.replace("fold along ", "").rstrip().split("=")
+        h, w = mat.shape
+        v = int(v)
+        if dim == "x":
+            c = min(v, (w - v - 1))
+            mat = mat[:, (v - c):v] + np.flip(mat[:, v + 1:], axis=1)
+        if dim == "y":
+            c = min(v, (h - v - 1))
+            mat = mat[(v - c):v, :] + np.flip(mat[v + 1:, :], axis=0)
+        mat = np.clip(mat, 0, 1)
+        ##
+
+    count = np.count_nonzero(mat)
+    print("COUNT = {0}".format(count))
+
+    return
+
+
+def task_26():
+    s = open("data/data_task_25", "r")
+    rows = s.readlines()
+    s.close()
+    ##
+    idx = rows.index("\n")
+    positions = rows[0:idx]
+    folds = rows[idx + 1:]
+
+    positions = np.array([np.array(list(map(int, position.rstrip().split(",")))) for position in positions])
+    w, h = positions[:, 0].max() + 1, positions[:, 1].max() + 1
+    grid = np.zeros((2000, 2000))
+    print("{0}".format((h, w)))
+    for x, y in positions:
+        grid[y, x] = 1
+
+    mat = grid.copy()
+
+    for fold in folds:
+        dim, v = fold.replace("fold along ", "").rstrip().split("=")
+        (h, w), v = mat.shape, int(v)
+        if dim == "x":
+            mat = mat[:, :v] + np.flip(mat[:, v + 1:2 * v + 1], axis=1)
+        if dim == "y":
+            mat = mat[:v, :] + np.flip(mat[v + 1:2 * v + 1, :], axis=0)
+        mat = np.clip(mat, 0, 1)
+
+    plt.imshow(mat)
+    plt.show()
     return
 
 
