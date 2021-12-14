@@ -1,3 +1,4 @@
+import operator
 import time
 from collections import Counter
 
@@ -30,8 +31,10 @@ def run():
     # task_22()
     # task_23()
     # task_24()
-    task_25()
-    task_26()
+    # task_25()
+    # task_26()
+    task_27()
+    task_28()
     return
 
 
@@ -1022,6 +1025,99 @@ def task_26():
 
     plt.imshow(mat)
     plt.show()
+    return
+
+
+def task_27():
+    s = open("data/data_task_27", "r")
+    rows = s.readlines()
+    s.close()
+    #
+    polymer = rows[0].rstrip()
+    rules = list(map(lambda x: x.rstrip().split(" -> "), rows[2:]))
+    #
+    r = polymer
+    steps = 10
+    for i in range(steps):
+        seq = r
+        w = len(seq)
+        extensions = []
+        for (a, b) in rules:
+            for j in range(1, w):
+                if r[j - 1] != a[0] or r[j] != a[1]:
+                    continue
+                else:
+                    extensions.append((j, b))
+        extensions.sort(key=lambda x: x[0])
+        o = 0
+        for (j, c) in extensions:
+            seq = seq[:j + o] + c + seq[j + o:]
+            o += 1
+        if i == (steps - 1):
+            counts = dict(Counter(seq))
+            counts = sorted(counts.items(), key=operator.itemgetter(1))
+            diff = counts[-1][1] - counts[0][1]
+            print("{0} : {1} : {2}".format(i, len(seq), diff))
+
+        r = seq
+    return
+
+
+def task_28():
+    s = open("data/data_task_27", "r")
+    rows = s.readlines()
+    s.close()
+    #
+    polymer = rows[0].rstrip()
+    rules = list(map(lambda x: x.rstrip().split(" -> "), rows[2:]))
+
+    #
+
+    def add_bigram(bigram, bigrams, c=1):
+        if bigram in bigrams:
+            bigrams[bigram] += c
+        else:
+            bigrams[bigram] = c
+
+    bigrams = {}
+    for i in range(1, len(polymer)):
+        bigram = polymer[i - 1:i + 1]
+        add_bigram(bigram, bigrams)
+
+    counts = {}
+    for b in polymer:
+        if b not in counts:
+            counts[b] = 1
+            continue
+        if b in counts:
+            counts[b] += 1
+            continue
+
+    r = polymer
+    steps = 40
+    for i in range(steps):
+        counts_ext = {}
+        for a, b in rules:
+            if a in bigrams:
+                v = bigrams[a]
+                if v <= 0:
+                    continue
+                bigrams[a] -= v
+                x, y = a[0] + b, b + a[1]
+                add_bigram(x, counts_ext, v)
+                add_bigram(y, counts_ext, v)
+                ##
+                if b not in counts:
+                    counts[b] = v
+                    continue
+                if b in counts:
+                    counts[b] += v
+                    continue
+        bigrams = counts_ext
+        print("{} : {}".format(i + 1, counts))
+    counts = sorted(counts.items(), key=operator.itemgetter(1))
+    diff = counts[-1][1] - counts[0][1]
+    print("{0} : {1}".format(steps, diff))
     return
 
 
