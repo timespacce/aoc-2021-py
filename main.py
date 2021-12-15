@@ -1155,10 +1155,6 @@ def task_29():
             if dist[a] + mat[b] < dist[b]:
                 dist[b] = dist[a] + mat[b]
                 q.append(b)
-            if visited[b]:
-                continue
-            visited[b] = 1
-            q.append(b)
 
     print("DISTANCE from {} to {} is {}".format(start, end, dist[end]))
     return
@@ -1212,10 +1208,6 @@ def task_30():
             if dist[a] + mat[b] < dist[b]:
                 dist[b] = dist[a] + mat[b]
                 q.append(b)
-            if visited[b]:
-                continue
-            visited[b] = 1
-            q.append(b)
 
     print("DISTANCE from {} to {} is {}".format(start, end, dist[end]))
     return
