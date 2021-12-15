@@ -1,6 +1,6 @@
 import operator
 import time
-from collections import Counter
+from collections import Counter, deque
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -33,8 +33,10 @@ def run():
     # task_24()
     # task_25()
     # task_26()
-    task_27()
-    task_28()
+    # task_27()
+    # task_28()
+    task_29()
+    task_30()
     return
 
 
@@ -1118,6 +1120,104 @@ def task_28():
     counts = sorted(counts.items(), key=operator.itemgetter(1))
     diff = counts[-1][1] - counts[0][1]
     print("{0} : {1}".format(steps, diff))
+    return
+
+
+def task_29():
+    s = open('data/data_task_29', 'r')
+    rows = s.readlines()
+    s.close()
+    mat = np.array([np.array(list(map(int, list(row.rstrip())))) for row in rows])
+    h, w = mat.shape
+    start, end = (0, 0), (h - 1, w - 1)
+    adj = [(-0, -1), (-1, -0), (-0, +1), (+1, -0)]
+    #
+    dist = np.ones((h, w)) * 1_000_000
+    visited = np.zeros((h, w))
+    #
+    q = deque()
+    q.append(start)
+    dist[start] = 0
+    visited[start] = 1
+
+    #
+    def is_ok(c):
+        x, y = c
+        return 0 <= x < h and 0 <= y < w
+
+    #
+    while q:
+        a = q.popleft()
+        for x in adj:
+            b = a[0] + x[0], a[1] + x[1]
+            if not is_ok(b):
+                continue
+            if dist[a] + mat[b] < dist[b]:
+                dist[b] = dist[a] + mat[b]
+                q.append(b)
+            if visited[b]:
+                continue
+            visited[b] = 1
+            q.append(b)
+
+    print("DISTANCE from {} to {} is {}".format(start, end, dist[end]))
+    return
+
+
+def task_30():
+    s = open('data/data_task_29', 'r')
+    rows = s.readlines()
+    s.close()
+    mat = np.array([np.array(list(map(int, list(row.rstrip())))) for row in rows])
+    h, w = mat.shape
+    ##
+    tiles = np.zeros((5 * h, 5 * w))
+    for i in range(5):
+        if i == 0:
+            tiles[i * h:(i + 1) * h, :w] = mat
+        else:
+            tile = tiles[(i - 1) * h:i * h, :w] + 1
+            tile[tile > 9] = 1
+            tiles[i * h:(i + 1) * h, :w] = tile
+        for j in range(1, 5):
+            tile = tiles[i * h:(i + 1) * h, (j - 1) * w:j * w] + 1
+            tile[tile > 9] = 1
+            tiles[i * h:(i + 1) * h, j * w:(j + 1) * w] = tile
+    ##
+    mat = tiles
+    h, w = mat.shape
+    start, end = (0, 0), (h - 1, w - 1)
+    adj = [(-0, -1), (-1, -0), (-0, +1), (+1, -0)]
+    #
+    dist = np.ones((h, w)) * 1_000_000
+    visited = np.zeros((h, w))
+    #
+    q = deque()
+    q.append(start)
+    dist[start] = 0
+    visited[start] = 1
+
+    #
+    def is_ok(c):
+        x, y = c
+        return 0 <= x < h and 0 <= y < w
+
+    #
+    while q:
+        a = q.popleft()
+        for x in adj:
+            b = a[0] + x[0], a[1] + x[1]
+            if not is_ok(b):
+                continue
+            if dist[a] + mat[b] < dist[b]:
+                dist[b] = dist[a] + mat[b]
+                q.append(b)
+            if visited[b]:
+                continue
+            visited[b] = 1
+            q.append(b)
+
+    print("DISTANCE from {} to {} is {}".format(start, end, dist[end]))
     return
 
 
