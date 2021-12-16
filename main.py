@@ -35,8 +35,10 @@ def run():
     # task_26()
     # task_27()
     # task_28()
-    task_29()
-    task_30()
+    # task_29()
+    # task_30()
+    task_31()
+    task_32()
     return
 
 
@@ -1210,6 +1212,202 @@ def task_30():
                 q.append(b)
 
     print("DISTANCE from {} to {} is {}".format(start, end, dist[end]))
+    return
+
+
+def task_31():
+    s = open("data/data_task_31", "r")
+    hexadecimal = s.readline()
+    s.close()
+
+    #
+    def to_binary(i):
+        as_binary = '{0:04b}'.format(int('000' + i, 16))
+        return as_binary
+
+    binary = [to_binary(i) for i in hexadecimal]
+    b = ''.join(binary)
+
+    elements, i, version_sums = [], 0, []
+
+    def read_literal(b, i):
+        literal_bits, q, c = [], i, 0
+        while True:
+            g_c = b[q]
+            q, c = q + 1, c + 1
+            bits = b[q:q + 4]
+            literal_bits.append(bits)
+            q, c = q + 4, c + 4
+            if g_c == '0':
+                break
+        literal = int(''.join(literal_bits), 2)
+        return q, c, literal
+
+    def read_function(b, i, packets):
+        if len(b) - i <= 6:
+            return i, 0
+
+        length, q = b[i], i + 1
+
+        if length == '0':
+            sub_length, q, j = int(b[q:q + 15], 2), q + 15, 0
+            while j < sub_length:
+                v, id, q = int(b[q:q + 3], 2), int(b[q + 3:q + 6], 2), q + 6
+                version_sums.append(v)
+                if id == 4:
+                    q, c, literal = read_literal(b, q)
+                    packets.append(('e', v, id, literal))
+                    j += 6 + c
+                else:
+                    sub_packets = []
+                    q, c = read_function(b, q, sub_packets)
+                    packets.append(('F', v, id, sub_packets))
+                    j += 6 + c
+        if length == '1':
+            sub_count, q, j = int(b[q:q + 11], 2), q + 11, 0
+            while j < sub_count:
+                v, id, q = int(b[q:q + 3], 2), int(b[q + 3:q + 6], 2), q + 6
+                version_sums.append(v)
+                if id == 4:
+                    q, c, literal = read_literal(b, q)
+                    packets.append(('e', v, id, literal))
+                    j += 1
+                else:
+                    sub_packets = []
+                    q, c = read_function(b, q, sub_packets)
+                    packets.append(('F', v, id, sub_packets))
+                    j += 1
+        return q, q - i
+
+    while True:
+        if len(b) - i <= 6:
+            break
+        # [VVV] [III]
+        v, id = int(b[i:i + 3], 2), int(b[i + 3:i + 6], 2)
+        version_sums.append(v)
+        i += 6
+        if id == 4:
+            # literal
+            i, c, literal = read_literal(b, i)
+            elements.append(('e', v, id, literal))
+        else:
+            # function
+            packets = []
+            i, c = read_function(b, i, packets)
+            if packets:
+                elements.append(('F', v, id, packets))
+    print(elements)
+    print("VERSION_SUM = {}".format(np.array(version_sums).sum()))
+    return
+
+
+def task_32():
+    s = open("data/data_task_31", "r")
+    hexadecimal = s.readline()
+    s.close()
+
+    #
+    def to_binary(i):
+        as_binary = '{0:04b}'.format(int('000' + i, 16))
+        return as_binary
+
+    binary = [to_binary(i) for i in hexadecimal]
+    b = ''.join(binary)
+
+    elements, i, version_sums = [], 0, []
+
+    def evaluate(f_id, packets):
+        xs = []
+        for packet in packets:
+            xs.append(packet[-1])
+        xs = np.array(xs)
+        literal = 0
+        if f_id == 0:
+            literal = xs.sum()
+        if f_id == 1:
+            literal = xs.prod()
+        if f_id == 2:
+            literal = xs.min()
+        if f_id == 3:
+            literal = xs.max()
+        if f_id == 5:
+            literal = 1 if xs[0] > xs[1] else 0
+        if f_id == 6:
+            literal = 1 if xs[0] < xs[1] else 0
+        if f_id == 7:
+            literal = 1 if xs[0] == xs[1] else 0
+        return literal
+
+    def read_literal(b, i):
+        literal_bits, q, c = [], i, 0
+        while True:
+            g_c = b[q]
+            q, c = q + 1, c + 1
+            bits = b[q:q + 4]
+            literal_bits.append(bits)
+            q, c = q + 4, c + 4
+            if g_c == '0':
+                break
+        literal = int(''.join(literal_bits), 2)
+        return q, c, literal
+
+    def read_function(b, i, packets, f_id):
+        if len(b) - i <= 6:
+            return i, 0, 0
+
+        length, q, literal = b[i], i + 1, 0
+
+        if length == '0':
+            sub_length, q, j = int(b[q:q + 15], 2), q + 15, 0
+            while j < sub_length:
+                v, sub_f_id, q = int(b[q:q + 3], 2), int(b[q + 3:q + 6], 2), q + 6
+                version_sums.append(v)
+                if sub_f_id == 4:
+                    q, c, literal = read_literal(b, q)
+                    packets.append(('e', v, sub_f_id, literal))
+                    j += 6 + c
+                else:
+                    sub_packets = []
+                    q, c, literal = read_function(b, q, sub_packets, sub_f_id)
+                    packets.append(('F', v, sub_f_id, sub_packets, literal))
+                    j += 6 + c
+        if length == '1':
+            sub_count, q, j = int(b[q:q + 11], 2), q + 11, 0
+            while j < sub_count:
+                v, sub_f_id, q = int(b[q:q + 3], 2), int(b[q + 3:q + 6], 2), q + 6
+                version_sums.append(v)
+                if sub_f_id == 4:
+                    q, c, literal = read_literal(b, q)
+                    packets.append(('e', v, sub_f_id, literal))
+                    j += 1
+                else:
+                    sub_packets = []
+                    q, c, literal = read_function(b, q, sub_packets, sub_f_id)
+                    packets.append(('F', v, sub_f_id, sub_packets, literal))
+                    j += 1
+        literal = evaluate(f_id, packets)
+        return q, q - i, literal
+
+    literal = 0
+    while True:
+        if len(b) - i <= 6:
+            break
+        # [VVV] [III]
+        v, f_id = int(b[i:i + 3], 2), int(b[i + 3:i + 6], 2)
+        version_sums.append(v)
+        i += 6
+        if f_id == 4:
+            # literal
+            i, c, literal = read_literal(b, i)
+            elements.append(('e', v, f_id, literal))
+        else:
+            # function
+            packets = []
+            i, c, literal = read_function(b, i, packets, f_id)
+            if packets:
+                elements.append(('F', v, f_id, packets, literal))
+    print(elements)
+    print("EVALUATION = {}".format(literal))
     return
 
 
