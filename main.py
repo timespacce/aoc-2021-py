@@ -37,8 +37,10 @@ def run():
     # task_28()
     # task_29()
     # task_30()
-    task_31()
-    task_32()
+    # task_31()
+    # task_32()
+    task_33()
+    task_34()
     return
 
 
@@ -1409,6 +1411,102 @@ def task_32():
     print(elements)
     print("EVALUATION = {}".format(literal))
     return
+
+
+def task_33():
+    s = open("data/data_task_33", "r")
+    area = s.readline()
+    s.close()
+    #
+    x, y = area.replace("target area: ", "").split(",")
+    (x1, x2), (y1, y2) = list(map(int, x.replace("x=", "").split(".."))), list(map(int, y.replace("y=", "").split("..")))
+    max_x, min_y = max(x1, x2), min(y1, y2)
+
+    def has_reached(i, j):
+        return x1 <= i <= x2 and y1 <= j <= y2
+
+    def has_skipped(i, j):
+        return i > max_x or j < min_y
+
+    max_y, count = 0.0, 0
+
+    for i in range(1, max_x):
+        for j in range(1, np.abs(min_y)):
+            u = [i, j]
+            s, v = [0, 0], u.copy()
+            local_max_y, reached = 0.0, False
+            while True:
+                s = s[0] + v[0], s[1] + v[1]
+                ##
+                if s[1] >= max_y:
+                    local_max_y = max(local_max_y, s[1])
+                ##
+                if v[0] == 0:
+                    v[0] = v[0]
+                elif v[0] > 0:
+                    v[0] -= 1
+                elif v[0] < 0:
+                    v[0] += 1
+                v[1] -= 1
+                if has_reached(s[0], s[1]):
+                    # print("{} : {}".format(u, local_max_y))
+                    reached = True
+                    break
+                if has_skipped(s[0], s[1]):
+                    break
+            if reached:
+                max_y = max(max_y, local_max_y)
+    print("MAX_Y = {}".format(max_y))
+    return
+
+
+def task_34():
+    s = open("data/data_task_33", "r")
+    area = s.readline()
+    s.close()
+    #
+    x, y = area.replace("target area: ", "").split(",")
+    (x1, x2), (y1, y2) = list(map(int, x.replace("x=", "").split(".."))), list(map(int, y.replace("y=", "").split("..")))
+    max_x, min_y = max(x1, x2), min(y1, y2)
+
+    def has_reached(i, j):
+        return x1 <= i <= x2 and y1 <= j <= y2
+
+    def has_skipped(i, j):
+        return i > max_x or j < min_y
+
+    max_y, count = 0.0, 0
+
+    for i in range(1, max_x + 1):
+        for j in range(-np.abs(min_y), np.abs(min_y) + 1):
+            u = [i, j]
+            s, v = [0, 0], u.copy()
+            local_max_y, reached = 0.0, False
+            while True:
+                s = s[0] + v[0], s[1] + v[1]
+                ##
+                if s[1] >= max_y:
+                    local_max_y = max(local_max_y, s[1])
+                ##
+                if v[0] == 0:
+                    v[0] = v[0]
+                elif v[0] > 0:
+                    v[0] -= 1
+                elif v[0] < 0:
+                    v[0] += 1
+                v[1] -= 1
+                if has_reached(s[0], s[1]):
+                    count += 1
+                    # print("{} : {}".format(u, local_max_y))
+                    reached = True
+                    break
+                if has_skipped(s[0], s[1]):
+                    break
+            if reached:
+                max_y = max(max_y, local_max_y)
+    print("MAX_Y = {} : COUNT = {}".format(max_y, count))
+    return
+
 
 
 if __name__ == "__main__":
