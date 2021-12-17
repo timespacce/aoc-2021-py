@@ -1508,7 +1508,6 @@ def task_34():
     return
 
 
-
 if __name__ == "__main__":
     begin = time.time()
     run()
