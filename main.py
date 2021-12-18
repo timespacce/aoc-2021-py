@@ -1,6 +1,7 @@
 import operator
 import time
 from collections import Counter, deque
+from math import ceil, floor
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -39,8 +40,10 @@ def run():
     # task_30()
     # task_31()
     # task_32()
-    task_33()
-    task_34()
+    # task_33()
+    # task_34()
+    task_35()
+    task_36()
     return
 
 
@@ -1505,6 +1508,254 @@ def task_34():
             if reached:
                 max_y = max(max_y, local_max_y)
     print("MAX_Y = {} : COUNT = {}".format(max_y, count))
+    return
+
+
+def task_35():
+    import ast
+
+    s = open("data/data_task_35", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        data = ast.literal_eval(row.rstrip())
+        return data
+
+    rows = [transform(row) for row in rows]
+
+    def add(a, b):
+        return [a, b]
+
+    def is_regular(v):
+        return isinstance(v, int)
+
+    def index_tree(a, count):
+        if is_regular(a):
+            return a, count + 1
+        x, c1 = index_tree(a[0], count)
+        y, c2 = index_tree(a[1], c1)
+        return [(x, c1), (y, c2)], c2
+
+    def unindex_tree(a):
+        v, idx = a
+        if is_regular(v):
+            return v
+        return [unindex_tree(v[0]), unindex_tree(v[1])]
+
+    mapping, s, e, left, right = ((0, 0), (0, 0)), False, False, -1, 100_000_000
+
+    def find_e(xy, lvl):
+        nonlocal mapping, s, e, left, right
+        v, idx = xy[0], xy[1]
+        if not is_regular(v):
+            if lvl == 4 and not e:
+                mapping, e = v, True
+            q1, q2 = v
+            find_e(q1, 1 + lvl)
+            find_e(q2, 1 + lvl)
+
+    def find_s(xy, lvl):
+        nonlocal mapping, s, e, left, right
+        v, idx = xy[0], xy[1]
+        if is_regular(v):
+            if v > 9 and not s and not e:
+                mapping, s = idx, True
+        else:
+            q1, q2 = v
+            find_s(q1, 1 + lvl)
+            find_s(q2, 1 + lvl)
+
+    def find_left_and_right(xy):
+        nonlocal mapping, s, e, left, right
+
+        v, idx = xy
+        if is_regular(v):
+            if e:
+                (x1, x1_idx), (x2, x2_idx) = mapping
+                if idx < x1_idx:
+                    left = max(left, idx)
+                if idx > x2_idx:
+                    right = min(right, idx)
+        else:
+            q1, q2 = v
+            find_left_and_right(q1)
+            find_left_and_right(q2)
+
+    def reduce(xy):
+        nonlocal mapping, s, e, left, right
+
+        v, idx = xy
+        if is_regular(v):
+            if s and idx == mapping:
+                return [(floor(v / 2), idx), (ceil(v / 2), idx)], idx
+            if e:
+                (x1, x1_idx), (x2, x2_idx) = mapping
+                if idx == left:
+                    return v + x1, idx
+                if idx == right:
+                    return v + x2, idx
+            return v, idx
+
+        if v == mapping:
+            return 0, idx
+
+        q1, q2 = v
+        x = reduce(q1)
+        y = reduce(q2)
+        return [x, y], idx
+
+    def magnitude(a):
+        if not isinstance(a, list):
+            return a
+        return 3 * magnitude(a[0]) + 2 * magnitude(a[1])
+
+    a = index_tree(rows[0], 0)
+    find_e(a, 0)
+    find_left_and_right(a)
+    rows_len, (a, s) = len(rows), reduce(a)
+    a = unindex_tree((a, s))
+    ##
+    for i in range(1, rows_len):
+        a = add(a, rows[i])
+        while True:
+            a = index_tree(a, 0)
+            mapping, s, e, left, right = ((-1, -1), (-1, -1)), False, False, -1, 100_000_000
+            find_e(a, 0)
+            find_s(a, 0)
+            find_left_and_right(a)
+            rows_len, (a, idx) = len(rows), reduce(a)
+            a = unindex_tree((a, idx))
+            if not s and not e:
+                break
+    x = magnitude(a)
+    print("REDUCTION = {} MAGNITUDE = {}".format(a, x))
+    return
+
+
+def task_36():
+    import ast
+
+    s = open("data/data_task_35", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        data = ast.literal_eval(row.rstrip())
+        return data
+
+    rows = [transform(row) for row in rows]
+
+    def add(a, b):
+        return [a, b]
+
+    def is_regular(v):
+        return isinstance(v, int)
+
+    def index_tree(a, count):
+        if is_regular(a):
+            return a, count + 1
+        x, c1 = index_tree(a[0], count)
+        y, c2 = index_tree(a[1], c1)
+        return [(x, c1), (y, c2)], c2
+
+    def unindex_tree(a):
+        v, idx = a
+        if is_regular(v):
+            return v
+        return [unindex_tree(v[0]), unindex_tree(v[1])]
+
+    mapping, s, e, left, right = ((0, 0), (0, 0)), False, False, -1, 100_000_000
+
+    def find_e(xy, lvl):
+        nonlocal mapping, s, e, left, right
+        v, idx = xy[0], xy[1]
+        if not is_regular(v):
+            if lvl == 4 and not e:
+                mapping, e = v, True
+            q1, q2 = v
+            find_e(q1, 1 + lvl)
+            find_e(q2, 1 + lvl)
+
+    def find_s(xy, lvl):
+        nonlocal mapping, s, e, left, right
+        v, idx = xy[0], xy[1]
+        if is_regular(v):
+            if v > 9 and not s and not e:
+                mapping, s = idx, True
+        else:
+            q1, q2 = v
+            find_s(q1, 1 + lvl)
+            find_s(q2, 1 + lvl)
+
+    def find_left_and_right(xy):
+        nonlocal mapping, s, e, left, right
+
+        v, idx = xy
+        if is_regular(v):
+            if e:
+                (x1, x1_idx), (x2, x2_idx) = mapping
+                if idx < x1_idx:
+                    left = max(left, idx)
+                if idx > x2_idx:
+                    right = min(right, idx)
+        else:
+            q1, q2 = v
+            find_left_and_right(q1)
+            find_left_and_right(q2)
+
+    def reduce(xy):
+        nonlocal mapping, s, e, left, right
+
+        v, idx = xy
+        if is_regular(v):
+            if s and idx == mapping:
+                return [(floor(v / 2), idx), (ceil(v / 2), idx)], idx
+            if e:
+                (x1, x1_idx), (x2, x2_idx) = mapping
+                if idx == left:
+                    return v + x1, idx
+                if idx == right:
+                    return v + x2, idx
+            return v, idx
+
+        if v == mapping:
+            return 0, idx
+
+        q1, q2 = v
+        x = reduce(q1)
+        y = reduce(q2)
+        return [x, y], idx
+
+    def magnitude(a):
+        if not isinstance(a, list):
+            return a
+        return 3 * magnitude(a[0]) + 2 * magnitude(a[1])
+
+    rows_len = len(rows)
+    ##
+    c, y = None, 0
+    for i in range(0, rows_len):
+        for j in range(0, rows_len):
+            if i == j:
+                continue
+            a = add(rows[i], rows[j])
+            while True:
+                a = index_tree(a, 0)
+                mapping, s, e, left, right = ((-1, -1), (-1, -1)), False, False, -1, 100_000_000
+                find_e(a, 0)
+                find_s(a, 0)
+                find_left_and_right(a)
+                rows_len, (a, idx) = len(rows), reduce(a)
+                a = unindex_tree((a, idx))
+                if not s and not e:
+                    break
+            x = magnitude(a)
+            if x > y:
+                c, y = a, x
+    print("REDUCTION = {} MAGNITUDE = {}".format(c, y))
     return
 
 
