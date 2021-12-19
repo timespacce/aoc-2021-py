@@ -1,3 +1,4 @@
+import itertools
 import operator
 import time
 from collections import Counter, deque
@@ -42,8 +43,10 @@ def run():
     # task_32()
     # task_33()
     # task_34()
-    task_35()
-    task_36()
+    # task_35()
+    # task_36()
+    # task_37()
+    task_38()
     return
 
 
@@ -1757,6 +1760,159 @@ def task_36():
                 c, y = a, x
     print("REDUCTION = {} MAGNITUDE = {}".format(c, y))
     return
+
+
+def task_37():
+    s = open("data/data_task_37", "r")
+    rows = s.readlines()
+    s.close()
+    scanners = []
+
+    s, e = 0, 0
+    for i in range(len(rows)):
+        if rows[i] == "\n" or i == len(rows) - 1:
+            e = i
+            row = rows[s:e + 1]
+            scanner = np.array(list(map(lambda x: list(map(int, x.rstrip().split(','))), row[1:-1])))
+            s = e + 1
+            scanners.append(scanner)
+
+    all_vs = list(itertools.permutations([0, 1, 2]))
+    all_us = list(itertools.product([1, -1], repeat=3))
+
+    all_beacons = 0
+
+    def find_beacons(x_idx, y_idx, x, y):
+        nonlocal all_beacons
+
+        def search_beacons(x, z):
+            nonlocal all_beacons, x_idx, y_idx
+
+            indices, diffs = [], []
+            for i, a in enumerate(x):
+                for j, b in enumerate(z):
+                    diff = a - b
+                    diffs.append(diff)
+                    indices.append((i, j))
+            indices, diffs = np.array(indices), np.array(diffs)
+            uniques, counts = np.unique(diffs, axis=0, return_counts=True)
+            beacons_count = counts >= 12
+            rel = uniques[beacons_count]
+            if len(rel) == 0:
+                return []
+            rel = rel[0]
+            matches = (diffs == rel).sum(axis=1) == 3
+            count = indices[matches].shape[0]
+            beacons = []
+            for i in indices[matches]:
+                beacons.append(x[i[0]])
+            all_beacons += count
+            return rel, count, beacons
+
+        output = None
+        for v in all_vs:
+            for u in all_us:
+                z = y[:, v] * np.array(u)
+                r = search_beacons(x, z)
+                if r:
+                    # z + rel = x
+                    rel, count, beacons = r
+                    output = rel, count, beacons, u, v
+        return output
+
+    s2c, s2u, s2v = {}, {}, {}
+    s2c[0] = np.array([0, 0, 0])
+    s2u[0] = np.array([1, 1, 1])
+    s2v[0] = np.array([0, 1, 2])
+    rels = np.zeros((len(scanners), 3))
+    mapping, pairs = {}, set()
+
+    def calculate_relative(i, j, points, output):
+        nonlocal mapping
+        if i == 0:
+            return output, points
+        u1, u2, u3 = s2v[i]
+        rel = np.array([output[u1], output[u2], output[u3]]) * s2u[i] + s2c[i]
+        transformation = points[:, s2v[i]] * s2u[i] + s2c[i]
+        previous = mapping[i]
+        return calculate_relative(previous, i, transformation, rel)
+
+    unique_beacons = []
+    unique_beacons.extend(scanners[0])
+    while True:
+        status = True
+        for i in range(0, len(scanners)):
+            for j in range(0, len(scanners)):
+                if i == j:
+                    continue
+                if i in s2c and (i, j) not in pairs and (j, i) not in pairs:
+                    r = find_beacons(i, j, scanners[i], scanners[j])
+                    if r:
+                        rel, count, beacons, u, v = r
+                        s2c[j], s2u[j], s2v[j] = rel, u, v
+                        ##
+                        rels[j, :], points = calculate_relative(i, j, scanners[j][:, v] * u + rel, rel)
+                        unique_beacons.extend(points)
+                        mapping[j] = i
+                        pairs.add((i, j))
+                        print("SCANNERS ({}, {}) @ {} with {}".format(i, j, rels[j], count))
+                        status = False
+                if j in s2c and (i, j) not in pairs and (j, i) not in pairs:
+                    r = find_beacons(j, i, scanners[j], scanners[i])
+                    if r:
+                        rel, count, beacons, u, v = r
+                        s2c[i], s2u[i], s2v[i] = rel, u, v
+                        ##
+                        rels[i, :], points = calculate_relative(j, i, scanners[i][:, v] * u + rel, rel)
+                        unique_beacons.extend(points)
+                        mapping[i] = j
+                        pairs.add((j, i))
+                        print("SCANNERS ({}, {}) @ {} with {}".format(j, i, rels[i], count))
+                        status = False
+        if status:
+            break
+    unique_beacons = np.unique(np.array(unique_beacons), axis=0)
+
+    print(rels)
+    print("BEACONS = {}".format(len(unique_beacons)))
+    return
+
+
+def task_38():
+    relatives = [[0.0, 0.0, 0.0],
+                 [2390.0, 37.0, 114.0],
+                 [-1082.0, 1243.0, 1312.0],
+                 [1228.0, -1252.0, 1272.0],
+                 [-1211.0, -89.0, 1243.0],
+                 [2530.0, 41.0, -1080.0],
+                 [-21.0, -3538.0, -37.0],
+                 [1307.0, -1212.0, -1125.0],
+                 [2482.0, -3626.0, -1056.0],
+                 [4812.0, -2428.0, 1313.0],
+                 [105.0, -1130.0, 56.0],
+                 [4854.0, -1225.0, 104.0],
+                 [3678.0, -1268.0, 16.0],
+                 [139.0, 1203.0, 1204.0],
+                 [4902.0, -2359.0, 34.0],
+                 [2508.0, -2394.0, -26.0],
+                 [1316.0, 44.0, -1063.0],
+                 [3757.0, -1186.0, 1340.0],
+                 [2386.0, -3640.0, 135.0],
+                 [1279.0, -2373.0, -1059.0],
+                 [2434.0, -1105.0, 113.0],
+                 [23.0, 100.0, 1151.0],
+                 [65.0, 1126.0, 32.0],
+                 [142.0, -2383.0, 131.0],
+                 [-11.0, 2312.0, 1188.0],
+                 [1361.0, -1191.0, 141.0],
+                 [3710.0, -2406.0, 66.0],
+                 [117.0, -1237.0, 1217.0]]
+    max_dist = 0
+    for a in relatives:
+        for b in relatives:
+            dist = np.abs((np.array(a) - np.array(b))).sum()
+            max_dist = max(max_dist, dist)
+    print("DISTANCE = {}".format(max_dist))
 
 
 if __name__ == "__main__":
