@@ -46,7 +46,9 @@ def run():
     # task_35()
     # task_36()
     # task_37()
-    task_38()
+    # task_38()
+    task_39()
+    task_40()
     return
 
 
@@ -1913,6 +1915,94 @@ def task_38():
             dist = np.abs((np.array(a) - np.array(b))).sum()
             max_dist = max(max_dist, dist)
     print("DISTANCE = {}".format(max_dist))
+
+
+def task_39():
+    s = open("data/data_task_39", "r")
+    rows = s.readlines()
+    s.close()
+
+    idx = rows.index("\n")
+    algo = rows[:idx]
+    img = rows[idx + 1:]
+
+    algo = list(map(lambda x: x.rstrip(), algo))
+    algo = "".join(algo)
+    algo = np.array([1 if c == "#" else 0 for c in algo])
+    assert len(algo) == 512
+
+    img = list(map(lambda x: x.rstrip(), img))
+    img = np.array([np.array([1 if c == "#" else 0 for c in row]) for row in img])
+    img = np.pad(img, ((3, 3), (3, 3)), mode='constant', constant_values=((0, 0), (0, 0)))
+    h, w = img.shape
+
+    levels = 2
+
+    for _ in range(levels):
+        conv = img.copy()
+        for i in range(1, h - 1):
+            for j in range(1, w - 1):
+                x1, x2 = np.clip(i - 1, 0, i), np.clip(i + 1, 0, h)
+                y1, y2 = np.clip(j - 1, 0, j), np.clip(j + 1, 0, w)
+
+                bin = img[x1:x2 + 1, y1:y2 + 1]
+                bin = ''.join(list(map(str, bin.flatten())))
+                idx = int(bin, 2)
+                pix = algo[idx]
+
+                if img[i, j] != pix:
+                    conv[i, j] = pix
+        img = conv[1:-1, 1:-1]
+        v = img[0, 0]
+        img = np.pad(img, ((3, 3), (3, 3)), mode='constant', constant_values=((v, v), (v, v)))
+        h, w = img.shape
+
+    pixels_count = img.sum()
+    print("PIXELS = {}".format(pixels_count))
+
+
+def task_40():
+    s = open("data/data_task_39", "r")
+    rows = s.readlines()
+    s.close()
+
+    idx = rows.index("\n")
+    algo = rows[:idx]
+    img = rows[idx + 1:]
+
+    algo = list(map(lambda x: x.rstrip(), algo))
+    algo = "".join(algo)
+    algo = np.array([1 if c == "#" else 0 for c in algo])
+    assert len(algo) == 512
+
+    img = list(map(lambda x: x.rstrip(), img))
+    img = np.array([np.array([1 if c == "#" else 0 for c in row]) for row in img])
+    img = np.pad(img, ((3, 3), (3, 3)), mode='constant', constant_values=((0, 0), (0, 0)))
+    h, w = img.shape
+
+    levels = 50
+
+    for _ in range(levels):
+        conv = img.copy()
+        for i in range(1, h - 1):
+            for j in range(1, w - 1):
+                x1, x2 = np.clip(i - 1, 0, i), np.clip(i + 1, 0, h)
+                y1, y2 = np.clip(j - 1, 0, j), np.clip(j + 1, 0, w)
+
+                bin = img[x1:x2 + 1, y1:y2 + 1]
+                bin = ''.join(list(map(str, bin.flatten())))
+                idx = int(bin, 2)
+                pix = algo[idx]
+
+                if img[i, j] != pix:
+                    conv[i, j] = pix
+        img = conv[1:-1, 1:-1]
+        v = img[0, 0]
+        img = np.pad(img, ((3, 3), (3, 3)), mode='constant', constant_values=((v, v), (v, v)))
+        h, w = img.shape
+
+    pixels_count = img.sum()
+    print("PIXELS = {}".format(pixels_count))
 
 
 if __name__ == "__main__":
