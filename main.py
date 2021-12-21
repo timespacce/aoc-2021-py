@@ -2049,6 +2049,11 @@ def task_41():
 
 
 def task_42():
+    s = open("data/data_task_41", "r")
+    rows = s.readlines()
+    s.close()
+    xs = np.array([int(row.rstrip()[-1]) for row in rows])
+
     @lru_cache(maxsize=None)
     def quantum(x_idx, xs_1, xs_2, ys_1, ys_2):
         if ys_1 >= 21:
@@ -2068,7 +2073,7 @@ def task_42():
 
         return scores
 
-    q1, q2 = quantum(0, 6, 3, 0, 0)
+    q1, q2 = quantum(0, xs[0], xs[1], 0, 0)
     print("{} : {}".format(q1, q2))
 
 
