@@ -2,6 +2,7 @@ import itertools
 import operator
 import time
 from collections import Counter, deque
+from functools import lru_cache
 from math import ceil, floor
 
 import numpy as np
@@ -49,7 +50,7 @@ def run():
     # task_38()
     # task_39()
     # task_40()
-    task_41()
+    # task_41()
     task_42()
     return
 
@@ -2014,34 +2015,61 @@ def task_41():
     #
     xs = np.array([int(row.rstrip()[-1]) for row in rows])
     ys = np.zeros(2)
-    dice = np.array([0, 0, 0])
     rolls = 0
 
-    def update_dice(dice):
-        dice = dice + np.arange(3)
+    v = 0
+
+    def next_v():
+        nonlocal v
+        v = v + 1
+        v = 1 if v > 100 else v
+        return v
+
+    def next_dice():
+        dice = np.array([next_v(), next_v(), next_v()])
+        return dice
 
     while True:
-        dice_1 = np.clip((dice + np.arange(3)) % 101, 1, 100)
-        dice_2 = (dice_1 + np.arange(3)) % 101
-        dice = dice_2
-        rolls += 1
+        dice = next_dice()
+        rolls += 3
+        xs[0] = (xs[0] + dice.sum() - 1) % 10 + 1
+        ys[0] += xs[0]
+        if ys[0] >= 1000:
+            print("{} : {} : {}".format(rolls, ys[1], rolls * ys[1]))
+            break
         ##
-        for z in dice_1:
-            xs[0] = np.clip((xs[0] + z) % 11, 1, 10)
-        for z in dice_2:
-            xs[1] = np.clip((xs[1] + z) % 11, 1, 10)
-        ##
-        ys += np.array([dice_1.sum(), dice_2.sum()])
-        ys_1, ys_2 = ys
-        if ys_1 >= 1000:
-            print(ys_2 * rolls)
-        if ys_2 >= 1000:
-            print(ys_1 * rolls)
-    return
+        dice = next_dice()
+        rolls += 3
+        xs[1] = (xs[1] + dice.sum() - 1) % 10 + 1
+        ys[1] += xs[1]
+        if ys[1] >= 1000:
+            print("{} : {} : {}".format(rolls, ys[0], rolls * ys[0]))
+            break
+        print(ys)
 
 
 def task_42():
-    return
+    @lru_cache(maxsize=None)
+    def quantum(x_idx, xs_1, xs_2, ys_1, ys_2):
+        if ys_1 >= 21:
+            return np.array([1, 0])
+        if ys_2 >= 21:
+            return np.array([0, 1])
+
+        scores = np.zeros(2)
+        for draw in itertools.product((1, 2, 3), repeat=3):
+            score = sum(draw)
+            if x_idx == 0:
+                q_1 = (xs_1 + score - 1) % 10 + 1
+                scores += quantum(1, q_1, xs_2, ys_1 + q_1, ys_2)
+            if x_idx == 1:
+                q_2 = (xs_2 + score - 1) % 10 + 1
+                scores += quantum(0, xs_1, q_2, ys_1, ys_2 + q_2)
+
+        return scores
+
+    q1, q2 = quantum(0, 6, 3, 0, 0)
+    print("{} : {}".format(q1, q2))
 
 
 if __name__ == "__main__":
