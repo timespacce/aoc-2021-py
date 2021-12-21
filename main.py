@@ -47,8 +47,10 @@ def run():
     # task_36()
     # task_37()
     # task_38()
-    task_39()
-    task_40()
+    # task_39()
+    # task_40()
+    task_41()
+    task_42()
     return
 
 
@@ -2003,6 +2005,43 @@ def task_40():
 
     pixels_count = img.sum()
     print("PIXELS = {}".format(pixels_count))
+
+
+def task_41():
+    s = open("data/data_task_41", "r")
+    rows = s.readlines()
+    s.close()
+    #
+    xs = np.array([int(row.rstrip()[-1]) for row in rows])
+    ys = np.zeros(2)
+    dice = np.array([0, 0, 0])
+    rolls = 0
+
+    def update_dice(dice):
+        dice = dice + np.arange(3)
+
+    while True:
+        dice_1 = np.clip((dice + np.arange(3)) % 101, 1, 100)
+        dice_2 = (dice_1 + np.arange(3)) % 101
+        dice = dice_2
+        rolls += 1
+        ##
+        for z in dice_1:
+            xs[0] = np.clip((xs[0] + z) % 11, 1, 10)
+        for z in dice_2:
+            xs[1] = np.clip((xs[1] + z) % 11, 1, 10)
+        ##
+        ys += np.array([dice_1.sum(), dice_2.sum()])
+        ys_1, ys_2 = ys
+        if ys_1 >= 1000:
+            print(ys_2 * rolls)
+        if ys_2 >= 1000:
+            print(ys_1 * rolls)
+    return
+
+
+def task_42():
+    return
 
 
 if __name__ == "__main__":
