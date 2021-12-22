@@ -1,5 +1,7 @@
+import collections
 import itertools
 import operator
+import re
 import time
 from collections import Counter, deque
 from functools import lru_cache
@@ -51,7 +53,9 @@ def run():
     # task_39()
     # task_40()
     # task_41()
-    task_42()
+    # task_42()
+    task_43()
+    task_44()
     return
 
 
@@ -2075,6 +2079,65 @@ def task_42():
 
     q1, q2 = quantum(0, xs[0], xs[1], 0, 0)
     print("{} : {}".format(q1, q2))
+
+
+def task_43():
+    s = open("data/data_task_43", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        mode, ranges = row.rstrip().split(" ")
+        mode = 1 if mode == "on" else 0
+        ranges = [list(map(int, range[2:].split(".."))) for range in ranges.split(",")]
+        return mode, ranges
+
+    rows = [transform(row) for row in rows]
+
+    grid = np.zeros((150, 150, 150))
+    o_x, o_y, o_z = 50, 50, 50
+    for mode, ((x1, x2), (y1, y2), (z1, z2)) in rows:
+        ((x1, x2), (y1, y2), (z1, z2)) = ((x1 + o_x, x2 + o_x), (y1 + o_y, y2 + o_y), (z1 + o_z, z2 + o_z))
+        grid[x1:x2 + 1, y1:y2 + 1, z1:z2 + 1] = mode
+    print("{}".format(grid.sum()))
+    return
+
+
+def task_44():
+    s = open("data/data_task_43", "r")
+    rows = s.readlines()
+    s.close()
+
+    #
+    def transform(row):
+        mode, ranges = row.rstrip().split(" ")
+        mode = 1 if mode == "on" else -1
+        ranges = [list(map(int, range[2:].split(".."))) for range in ranges.split(",")]
+        return mode, ranges
+
+    rows = [transform(row) for row in rows]
+
+    ranges = collections.defaultdict(int)
+    for r2 in rows:
+        mode_2, ((a1, a2), (b1, b2), (c1, c2)) = r2
+        for r1 in ranges.copy().items():
+            (x1, x2, y1, y2, z1, z2), mode_1 = r1
+            o_x1, o_x2 = max(x1, a1), min(x2, a2)
+            o_y1, o_y2 = max(y1, b1), min(y2, b2)
+            o_z1, o_z2 = max(z1, c1), min(z2, c2)
+            if o_x1 <= o_x2 and o_y1 <= o_y2 and o_z1 <= o_z2:
+                key = (o_x1, o_x2, o_y1, o_y2, o_z1, o_z2)
+                ranges[key] -= mode_1
+        if mode_2 == 1:
+            key = (a1, a2, b1, b2, c1, c2)
+            ranges[key] = 1
+    score = 0.0
+    for r1 in ranges.items():
+        (x1, x2, y1, y2, z1, z2), mode_1 = r1
+        score += ((x2 + 1 - x1) * (y2 + 1 - y1) * (z2 + 1 - z1)) * mode_1
+    print(score)
+    return
 
 
 if __name__ == "__main__":
