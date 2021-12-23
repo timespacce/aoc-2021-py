@@ -2143,7 +2143,128 @@ def task_44():
 
 
 def task_45():
-    bins = [[], [], [2, 1], [], [3, 4], [2, 3], [4, 1], [], []]
+    import copy
+
+    lanes_0 = np.zeros(11)
+    hold_lanes = [0, 1, 3, 5, 7, 9, 10]
+    bins_lanes = [2, 4, 6, 8]
+    bins_0 = [[1, 3], [4, 3], [1, 4], [2, 2]]
+    to_score = {1: 1, 2: 10, 3: 100, 4: 1000}
+
+    def find_next(bin):
+        j = 0
+        for i, e in enumerate(bin):
+            if e != 0:
+                j = i
+                break
+        return j, e
+
+    def bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score):
+        nonlocal hold_lanes, to_score
+
+        if lane_idx not in hold_lanes:
+            return 0
+        if lanes[lane_idx]:
+            return 1
+        lanes_copy, bins_copy = lanes.copy(), copy.deepcopy(bins)
+        bin = bins_copy[bin_idx]
+        j, e = find_next(bin)
+        bin[j], lanes_copy[lane_idx] = 0, e
+        next_score = score + (np.abs(bin_lane_idx - lane_idx) + j + 1) * to_score[e]
+        return lanes_copy, bins_copy, next_score
+
+    def lane_to_lane(lanes, bins, lane_id, lane_idx, score):
+        nonlocal hold_lanes, to_score
+
+        if lane_idx not in hold_lanes:
+            return 0
+        if lanes[lane_idx]:
+            return 1
+        lanes_copy, bins_copy = lanes.copy(), copy.deepcopy(bins)
+        e = lanes_copy[lane_id]
+        lanes_copy[lane_id], lanes_copy[lane_idx] = 0, e
+        next_score = score + np.abs(lane_id - lane_idx) * to_score[e]
+        return lanes_copy, bins_copy, next_score
+
+    def lane_to_bin(lanes, bins, lane_idx, score):
+        nonlocal hold_lanes, to_score
+
+        if lanes[lane_idx]:
+            return 1
+        lanes_copy, bins_copy = lanes.copy(), copy.deepcopy(bins)
+        e = lanes_copy[lane_idx]
+        for bin_idx, bin_lane_idx in enumerate(bins_lanes):
+            if bin_idx + 1 != e:
+                continue
+            if sum(bins_copy[bin_idx]) == 0:
+                bins_copy[bin_idx][-1] = e
+                lanes_copy[lane_idx] = 0
+                next_score = score + np.abs(bin_lane_idx - lane_idx + 4) * to_score[e]
+                return lanes_copy, bins_copy, next_score
+            for i in reversed(range(0, 4)):
+                if bins_copy[bin_idx][i] != e and bins_copy[bin_idx][i] != 0:
+                    break
+                if bins_copy[bin_idx][i] == 0:
+                    bins_copy[bin_idx][i] = e
+                    lanes_copy[lane_idx] = 0
+                    next_score = score + np.abs(bin_lane_idx - lane_idx + i + 1) * to_score[e]
+                    return lanes_copy, bins_copy, next_score
+
+    def is_contained(x, ys):
+        for y in ys:
+            if all(x[0] == y[0]) and x[1] == y[1]:
+                return True
+        return False
+
+    def compute(moves):
+        while True:
+            next_moves = []
+            for (lanes, bins, score) in moves:
+                for bin_idx, (bin_lane_idx, bin) in enumerate(zip(bins_lanes, bins)):
+                    if sum(bin) == 0:
+                        continue
+                    for lane_idx in reversed(range(0, bin_lane_idx)):
+                        x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
+                        if x == 1:
+                            break
+                        if x:
+                            if not is_contained(x, moves):
+                                next_moves.append(x)
+                    for lane_idx in range(bin_lane_idx, len(lanes)):
+                        x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
+                        if x == 1:
+                            break
+                        if x:
+                            if not is_contained(x, moves):
+                                next_moves.append(x)
+                for lane_id, lane in enumerate(lanes):
+                    if lane == 0 or lane_id not in hold_lanes:
+                        continue
+                    for lane_idx in reversed(range(0, lane_id)):
+                        x = lane_to_lane(lanes, bins, lane_id, lane_idx, score)
+                        if x == 1:
+                            break
+                        if x:
+                            if not is_contained(x, moves):
+                                next_moves.append(x)
+                    for lane_idx in range(lane_id, len(lanes)):
+                        x = lane_to_lane(lanes, bins, lane_id, lane_idx, score)
+                        if x == 1:
+                            break
+                        if x:
+                            if not is_contained(x, moves):
+                                next_moves.append(x)
+                for lane_id, lane in enumerate(lanes):
+                    if lane == 0 or lane_id not in hold_lanes:
+                        continue
+                    lane_to_bin(lanes, bins, lane_id, score)
+            moves = next_moves
+
+        return
+
+    moves = [(lanes_0, bins_0, 0)]
+    compute(moves)
+
     return
 
 
