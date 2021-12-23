@@ -54,8 +54,10 @@ def run():
     # task_40()
     # task_41()
     # task_42()
-    task_43()
-    task_44()
+    # task_43()
+    # task_44()
+    task_45()
+    task_46()
     return
 
 
@@ -2137,6 +2139,14 @@ def task_44():
         (x1, x2, y1, y2, z1, z2), mode_1 = r1
         score += ((x2 + 1 - x1) * (y2 + 1 - y1) * (z2 + 1 - z1)) * mode_1
     print(score)
+    return
+
+
+def task_45():
+    return
+
+
+def task_46():
     return
 
 
