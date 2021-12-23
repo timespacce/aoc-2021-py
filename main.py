@@ -2146,8 +2146,9 @@ def task_45():
     lanes_0 = np.zeros(11, dtype=np.int8)
     hold_lanes = [0, 1, 3, 5, 7, 9, 10]
     bins_lanes = [2, 4, 6, 8]
-    bins_0 = np.array([[1, 3], [4, 3], [1, 4], [2, 2]])
+    bins_0 = np.array([[1, 4, 4, 3], [4, 3, 2, 3], [1, 2, 1, 4], [2, 1, 3, 2]])
     to_score = np.array([1, 10, 100, 1000])
+    unique_moves = {}
 
     def find_next(bin):
         j = 0
@@ -2173,12 +2174,12 @@ def task_45():
         for lane_id in reversed(range(0, lane_idx)):
             if lanes[lane_id]:
                 break
-            if lane_id in hold_lanes:
+            if lane_id not in bins_lanes:
                 continue
             bin_lane_idx = lane_id // 2 - 1
             if e != (bin_lane_idx + 1):
                 continue
-            for i in reversed(range(0, 2)):
+            for i in reversed(range(0, 4)):
                 if bins_copy[bin_lane_idx][i] != e and bins_copy[bin_lane_idx][i] != 0:
                     break
                 if bins_copy[bin_lane_idx][i] == 0:
@@ -2186,15 +2187,15 @@ def task_45():
                     lanes_copy[lane_idx] = 0
                     next_score = score + (np.abs(lane_id - lane_idx) + i + 1) * to_score[e - 1]
                     return lanes_copy, bins_copy, next_score
-        for lane_id in range(lane_idx, len(lanes)):
+        for lane_id in range(lane_idx + 1, len(lanes)):
             if lanes[lane_id]:
                 break
-            if lane_id in hold_lanes:
+            if lane_id not in bins_lanes:
                 continue
             bin_lane_idx = lane_id // 2 - 1
             if e != (bin_lane_idx + 1):
                 continue
-            for i in reversed(range(0, 2)):
+            for i in reversed(range(0, 4)):
                 if bins_copy[bin_lane_idx][i] != e and bins_copy[bin_lane_idx][i] != 0:
                     break
                 if bins_copy[bin_lane_idx][i] == 0:
@@ -2210,17 +2211,19 @@ def task_45():
                 return True
         return False
 
-    def compute(moves):
+    def compute():
+        moves = [(lanes_0, bins_0, 0)]
         while True:
             next_moves = []
             for (lanes, bins, score) in moves:
-                if (bins == np.array([[1, 1], [2, 2], [3, 3], [4, 4]])).all():
+                if np.abs(bins - np.array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]])).sum() == 0:
                     print("{} @ {}".format(bins, score))
 
                 for bin_idx, bin in enumerate(bins):
                     bin_lane_idx = (bin_idx + 1) * 2
-                    if sum(bin) == 0:
+                    if sum(bin) == 0 or (bin == np.ones(4) * (bin_idx + 1)).all():
                         continue
+                    ##
                     for lane_idx in reversed(range(0, bin_lane_idx)):
                         if lane_idx not in hold_lanes:
                             continue
@@ -2228,6 +2231,10 @@ def task_45():
                             break
                         x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
                         if x:
+                            key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                            if key in unique_moves and unique_moves[key] <= x[2]:
+                                continue
+                            unique_moves[key] = x[2]
                             next_moves.append(x)
                     for lane_idx in range(bin_lane_idx, len(lanes)):
                         if lane_idx not in hold_lanes:
@@ -2236,6 +2243,10 @@ def task_45():
                             break
                         x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
                         if x:
+                            key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                            if key in unique_moves and unique_moves[key] <= x[2]:
+                                continue
+                            unique_moves[key] = x[2]
                             next_moves.append(x)
                 ##
                 for lane_idx in range(len(lanes)):
@@ -2243,14 +2254,17 @@ def task_45():
                         continue
                     x = lane_to_bin(lanes, bins, lane_idx, score)
                     if x:
+                        key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                        if key in unique_moves and unique_moves[key] <= x[2]:
+                            continue
+                        unique_moves[key] = x[2]
                         next_moves.append(x)
             print(len(next_moves))
             moves = next_moves
+            if not moves:
+                return
 
-        return
-
-    moves = [(lanes_0, bins_0, 0)]
-    compute(moves)
+    compute()
 
     return
 
