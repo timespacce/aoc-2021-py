@@ -56,8 +56,11 @@ def run():
     # task_42()
     # task_43()
     # task_44()
-    task_45()
-    task_46()
+    # task_45()
+    # task_46()
+    task_47()
+    task_48()
+
     return
 
 
@@ -2270,6 +2273,157 @@ def task_45():
 
 
 def task_46():
+    lanes_0 = np.zeros(11, dtype=np.int8)
+    hold_lanes = [0, 1, 3, 5, 7, 9, 10]
+    bins_lanes = [2, 4, 6, 8]
+    bins_0 = np.array([[1, 4, 4, 3], [4, 3, 2, 3], [1, 2, 1, 4], [2, 1, 3, 2]])
+    to_score = np.array([1, 10, 100, 1000])
+    unique_moves = {}
+
+    def find_next(bin):
+        j = 0
+        for i, e in enumerate(bin):
+            if e != 0:
+                j = i
+                break
+        return j, e
+
+    def bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score):
+        nonlocal to_score
+        lanes_copy, bins_copy = lanes.copy(), bins.copy()
+        bin = bins_copy[bin_idx]
+        j, e = find_next(bin)
+        bin[j], lanes_copy[lane_idx] = 0, e
+        next_score = score + (np.abs(bin_lane_idx - lane_idx) + j + 1) * to_score[e - 1]
+        return lanes_copy, bins_copy, next_score
+
+    def lane_to_bin(lanes, bins, lane_idx, score):
+        nonlocal hold_lanes, to_score
+        lanes_copy, bins_copy = lanes.copy(), bins.copy()
+        e = lanes_copy[lane_idx]
+        for lane_id in reversed(range(0, lane_idx)):
+            if lanes[lane_id]:
+                break
+            if lane_id not in bins_lanes:
+                continue
+            bin_lane_idx = lane_id // 2 - 1
+            if e != (bin_lane_idx + 1):
+                continue
+            for i in reversed(range(0, 4)):
+                if bins_copy[bin_lane_idx][i] != e and bins_copy[bin_lane_idx][i] != 0:
+                    break
+                if bins_copy[bin_lane_idx][i] == 0:
+                    bins_copy[bin_lane_idx][i] = e
+                    lanes_copy[lane_idx] = 0
+                    next_score = score + (np.abs(lane_id - lane_idx) + i + 1) * to_score[e - 1]
+                    return lanes_copy, bins_copy, next_score
+        for lane_id in range(lane_idx + 1, len(lanes)):
+            if lanes[lane_id]:
+                break
+            if lane_id not in bins_lanes:
+                continue
+            bin_lane_idx = lane_id // 2 - 1
+            if e != (bin_lane_idx + 1):
+                continue
+            for i in reversed(range(0, 4)):
+                if bins_copy[bin_lane_idx][i] != e and bins_copy[bin_lane_idx][i] != 0:
+                    break
+                if bins_copy[bin_lane_idx][i] == 0:
+                    bins_copy[bin_lane_idx][i] = e
+                    lanes_copy[lane_idx] = 0
+                    next_score = score + (np.abs(lane_id - lane_idx) + i + 1) * to_score[e - 1]
+                    return lanes_copy, bins_copy, next_score
+        return None
+
+    def is_contained(x, ys):
+        for y in ys:
+            if (x[0] == y[0]).all() and (x[1] == y[1]).all():
+                return True
+        return False
+
+    def compute():
+        moves = [(lanes_0, bins_0, 0)]
+        while True:
+            next_moves = []
+            for (lanes, bins, score) in moves:
+                if np.abs(bins - np.array([[1, 1, 1, 1], [2, 2, 2, 2], [3, 3, 3, 3], [4, 4, 4, 4]])).sum() == 0:
+                    print("{} @ {}".format(bins, score))
+
+                for bin_idx, bin in enumerate(bins):
+                    bin_lane_idx = (bin_idx + 1) * 2
+                    if sum(bin) == 0 or (bin == np.ones(4) * (bin_idx + 1)).all():
+                        continue
+                    ##
+                    for lane_idx in reversed(range(0, bin_lane_idx)):
+                        if lane_idx not in hold_lanes:
+                            continue
+                        if lanes[lane_idx]:
+                            break
+                        x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
+                        if x:
+                            key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                            if key in unique_moves and unique_moves[key] <= x[2]:
+                                continue
+                            unique_moves[key] = x[2]
+                            next_moves.append(x)
+                    for lane_idx in range(bin_lane_idx, len(lanes)):
+                        if lane_idx not in hold_lanes:
+                            continue
+                        if lanes[lane_idx]:
+                            break
+                        x = bin_to_lane(lanes, bins, lane_idx, bin_idx, bin_lane_idx, score)
+                        if x:
+                            key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                            if key in unique_moves and unique_moves[key] <= x[2]:
+                                continue
+                            unique_moves[key] = x[2]
+                            next_moves.append(x)
+                ##
+                for lane_idx in range(len(lanes)):
+                    if lane_idx not in hold_lanes or not lanes[lane_idx]:
+                        continue
+                    x = lane_to_bin(lanes, bins, lane_idx, score)
+                    if x:
+                        key = tuple(np.concatenate([x[0], x[1].flatten()]))
+                        if key in unique_moves and unique_moves[key] <= x[2]:
+                            continue
+                        unique_moves[key] = x[2]
+                        next_moves.append(x)
+            print(len(next_moves))
+            moves = next_moves
+            if not moves:
+                return
+
+    compute()
+
+    return
+
+
+def task_47():
+    b1s = np.array([12, 12, 13, 12, -3, 10, 14, -16, 12, -8, -12, -7, -6, -11])
+    b3s = np.array([7, 8, 2, 11, 6, 12, 14, 13, 15, 10, 6, 10, 8, 5])
+
+    def alu(z, w, b1, b3):
+        x = (z % 26) + b1
+        if x != w:
+            return z * 26 + w + b3
+        else:
+            return z // 26
+
+    zs = {0: ()}
+    for b1, b3 in zip(b1s, b3s):
+        CAP = 26 ** 5
+        zs = {
+            alu(z, d, b1, b3): v + (d,)
+            for z, v in zs.items() for d in range(1, 10)  # reverse range for part 2
+            if z <= CAP
+        }
+        continue
+
+    print("".join(str(c) for c in zs[0]))
+
+
+def task_48():
     return
 
 
