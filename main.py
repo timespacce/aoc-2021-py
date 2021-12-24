@@ -2410,21 +2410,47 @@ def task_47():
         else:
             return z // 26
 
-    zs = {0: ()}
+    vs = {0: []}
     for b1, b3 in zip(b1s, b3s):
-        CAP = 26 ** 5
-        zs = {
-            alu(z, d, b1, b3): v + (d,)
-            for z, v in zs.items() for d in range(1, 10)  # reverse range for part 2
-            if z <= CAP
-        }
-        continue
+        vs_ext = {}
+        for c in range(1, 10):
+            for z, q in vs.items():
+                key = alu(z, c, b1, b3)
+                if key < 26 ** 5:
+                    seq = q.copy()
+                    seq.append(c)
+                    vs_ext[key] = seq
+        vs = vs_ext
 
-    print("".join(str(c) for c in zs[0]))
+    value = "".join(list(map(str, vs[0])))
+    print(value)
 
 
 def task_48():
-    return
+    b1s = np.array([12, 12, 13, 12, -3, 10, 14, -16, 12, -8, -12, -7, -6, -11])
+    b3s = np.array([7, 8, 2, 11, 6, 12, 14, 13, 15, 10, 6, 10, 8, 5])
+
+    def alu(z, w, b1, b3):
+        x = (z % 26) + b1
+        if x != w:
+            return z * 26 + w + b3
+        else:
+            return z // 26
+
+    vs = {0: []}
+    for b1, b3 in zip(b1s, b3s):
+        vs_ext = {}
+        for c in range(1, 10):
+            for z, q in vs.items():
+                key = alu(z, c, b1, b3)
+                if key not in vs_ext and key < 26 ** 5:
+                    seq = q.copy()
+                    seq.append(c)
+                    vs_ext[key] = seq
+        vs = vs_ext
+
+    value = "".join(list(map(str, vs[0])))
+    print(value)
 
 
 if __name__ == "__main__":
