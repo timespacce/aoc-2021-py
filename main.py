@@ -58,8 +58,10 @@ def run():
     # task_44()
     # task_45()
     # task_46()
-    task_47()
-    task_48()
+    # task_47()
+    # task_48()
+    task_49()
+    task_50()
 
     return
 
@@ -2451,6 +2453,67 @@ def task_48():
 
     value = "".join(list(map(str, vs[0])))
     print(value)
+
+
+def task_49():
+    s = open("data/data_task_49", "r")
+    rows = s.readlines()
+    s.close()
+
+    def transform_element(element):
+        if element == ">":
+            return 1
+        if element == "v":
+            return 2
+        if element == ".":
+            return 0
+
+    def transform_row(row):
+        output = np.array([transform_element(x) for x in row.rstrip()])
+        return output
+
+    grid = np.array([transform_row(row) for row in rows])
+    h, w = grid.shape
+    steps = 1
+
+    while True:
+        queue, count = [], 0
+        for i in range(h):
+            for j in range(w):
+                e = grid[i, j]
+                if e != 1:
+                    continue
+                q = (j + 1) % w
+                if not grid[i, q]:
+                    queue.append(((i, q), (i, j)))
+        for ((i, q), (i, j)) in queue:
+            grid[i, q] = 1
+            grid[i, j] = 0
+        count += len(queue)
+        ##
+        queue = []
+        for i in range(h):
+            for j in range(w):
+                e = grid[i, j]
+                if e != 2:
+                    continue
+                q = (i + 1) % h
+                if not grid[q, j]:
+                    queue.append(((q, j), (i, j)))
+        for ((q, j), (i, j)) in queue:
+            grid[q, j] = 2
+            grid[i, j] = 0
+        count += len(queue)
+        if count == 0:
+            print(steps)
+            return
+        steps += 1
+
+    return
+
+
+def task_50():
+    return
 
 
 if __name__ == "__main__":
